@@ -1,0 +1,24 @@
+FROM centos:centos7
+LABEL qingdalf qingdalf@foxmail.com
+
+ADD git-2.9.5.tar.gz /
+
+RUN  yum -y install curl-devel expat-devel gettext-devel openssl-devel zlib-devel asciidoc xmlto docbook2x \
+     autoconf gcc-c++ perl-ExtUtils-MakeMaker make openssh* && \
+     cd /git-2.9.5 && \
+     ./configure --prefix=/usr/local/git && \
+     make profix=/usr/local/git && \
+     make profix=/usr/local/git install && \
+     cp contrib/completion/git-completion.bash /etc/bash_completion.d/ && \
+     echo "source /etc/bash_completion.d/git-completion.bash" >> /etc/profile && \
+     rm -f git-2.9.5.tar.gz git-2.9.5 && \
+     ln -s /usr/local/git/bin/*  /usr/local/bin/ && \
+     mkdir /var/run/sshd && echo 'UseDNS no' >> /etc/ssh/sshd_config && \
+     sed -i -e '/pam_loginuid.so/d' /etc/pam.d/sshd && \
+     echo 'root:123456' | chpasswd && /usr/bin/ssh-keygen -A
+
+WORKDIR /root/
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd","-D"]
